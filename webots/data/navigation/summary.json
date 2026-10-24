@@ -1,0 +1,75 @@
+{
+  "plan": {
+    "start": [
+      -0.6,
+      -0.6
+    ],
+    "goal": [
+      0.6,
+      0.6
+    ],
+    "waypoints": [
+      [
+        -0.6,
+        -0.6
+      ],
+      [
+        -0.39,
+        0.45
+      ],
+      [
+        -0.33,
+        0.51
+      ],
+      [
+        0.39,
+        0.61
+      ],
+      [
+        0.6,
+        0.6
+      ]
+    ],
+    "cell_path_length_m": 2.2008,
+    "waypoint_path_length_m": 2.0928,
+    "robot_radius_m": 0.037
+  },
+  "trials": [
+    {
+      "name": "low_kp",
+      "kp": 0.8,
+      "ki": 0.0,
+      "kd": 0.0,
+      "reached_goal": true,
+      "time_to_goal_s": 23.904,
+      "final_error_m": 0.0199,
+      "odometry_drift_m": 0.1502,
+      "emergency_stop_steps": 0,
+      "min_front_clearance_m": 0.1141
+    },
+    {
+      "name": "tuned",
+      "kp": 2.0,
+      "ki": 0.0,
+      "kd": 0.1,
+      "reached_goal": true,
+      "time_to_goal_s": 22.336,
+      "final_error_m": 0.0198,
+      "odometry_drift_m": 0.144,
+      "emergency_stop_steps": 0,
+      "min_front_clearance_m": 0.1225
+    },
+    {
+      "name": "high_kp",
+      "kp": 6.0,
+      "ki": 0.0,
+      "kd": 0.0,
+      "reached_goal": true,
+      "time_to_goal_s": 21.856,
+      "final_error_m": 0.0198,
+      "odometry_drift_m": 0.1074,
+      "emergency_stop_steps": 0,
+      "min_front_clearance_m": 0.1079
+    }
+  ]
+}
