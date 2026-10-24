@@ -16,6 +16,11 @@ Fusion method (feature-level, bearing association):
     occasional wrong association (for example, when another object partly
     occludes the landmark).
 
+    Detections clipped by the image border have a biased centroid, so they
+    are kept separately. They are only used for a landmark that has fewer
+    than MIN_CLEAN_VIEWS unclipped views: quality first, quantity only when
+    clean views are scarce.
+
 The fused result is a single semantic occupancy grid:
     -1 unknown, 0 free, 1 obstacle/wall, 2 red, 3 green, 4 blue landmark
 which is the unified environment representation passed to the planner.
@@ -27,14 +32,16 @@ import numpy as np
 
 LANDMARK_CODES = {"red": 2, "green": 3, "blue": 4}
 UNKNOWN, FREE, OCCUPIED = -1, 0, 1
+MIN_CLEAN_VIEWS = 3
 
 
 def fuse_detection(detection, ranges, angles, pose, landmark_radius,
                    window_deg=2.0):
     """Turn one camera detection plus the matching LiDAR scan into a world
-    position for the landmark centre. Returns (x, y) or None."""
-    if detection["touches_border"]:
-        return None   # centroid of a clipped blob gives a biased bearing
+    position for the landmark centre. Returns (x, y) or None.
+
+    The caller decides whether to trust detections that touch the image
+    border (see aggregate_landmarks)."""
 
     bearing = detection["bearing"]
     # Angular difference wrapped to [-pi, pi].
@@ -53,10 +60,20 @@ def fuse_detection(detection, ranges, angles, pose, landmark_radius,
             y + distance * math.sin(yaw + bearing))
 
 
-def aggregate_landmarks(estimates):
-    """Combine per-frame estimates {colour: [(x, y), ...]} with a median."""
+def aggregate_landmarks(clean, clipped=None, min_clean=MIN_CLEAN_VIEWS):
+    """Combine per-frame estimates with a median.
+
+    clean / clipped: {colour: [(x, y), ...]} from unclipped and
+    border-clipped detections. Clipped estimates are added only for a
+    landmark with fewer than min_clean clean estimates.
+    """
+    clipped = clipped or {}
     result = {}
-    for colour, points in estimates.items():
+    for colour in set(clean) | set(clipped):
+        points = list(clean.get(colour, []))
+        used_clipped = len(points) < min_clean and bool(clipped.get(colour))
+        if used_clipped:
+            points += clipped[colour]
         if not points:
             continue
         pts = np.array(points)
@@ -64,6 +81,7 @@ def aggregate_landmarks(estimates):
         spread = np.median(np.linalg.norm(pts - centre, axis=1))
         result[colour] = {"x": float(centre[0]), "y": float(centre[1]),
                           "n_frames": len(points),
+                          "used_clipped": used_clipped,
                           "median_spread_m": float(spread)}
     return result
 

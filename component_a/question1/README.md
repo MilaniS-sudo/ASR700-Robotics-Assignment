@@ -26,7 +26,11 @@ arena in `webots/worlds/component_a.wbt`:
 ## Method summary
 1. **Camera.** Convert to HSV and threshold saturation to reject grey and pale surfaces. Hue identifies red, green or blue. Opening and closing remove noise, and a pinhole model converts the blob centroid to a bearing.
 2. **LiDAR.** Invalid returns are removed. A median filter was tested and rejected, because it reduced edge coverage on this data and only helps above about 5% outlier spikes. Scans are integrated into a 2 cm log-odds occupancy grid.
-3. **Fusion.** Each camera detection is matched to the LiDAR return at the same bearing (±2°). Range plus radius gives the landmark centre. The median across frames gives the final estimate, which then labels the occupancy grid.
+3. **Fusion.** Each camera detection is matched to the LiDAR return at the same bearing (±2°). Range plus radius gives the landmark centre. The median across frames gives the final estimate. Detections clipped by the image border are used only when a landmark has fewer than 3 clean views, a rule chosen by comparing policies. The fused landmarks then label the occupancy grid.
+
+## Results (this dataset)
+- Landmark position error: 6.0 mm (red), 8.7 mm (green), 10.0 mm (blue)
+- Occupancy map precision 99.8%, object edge coverage 94.3%
 
 ## How to run
 From this folder: `jupyter notebook perception_pipeline.ipynb` and run all
