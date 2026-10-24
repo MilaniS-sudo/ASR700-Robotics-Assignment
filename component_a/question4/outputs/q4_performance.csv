@@ -1,0 +1,13 @@
+,low_kp,tuned,high_kp
+Gains,"Kp=0.8, Ki=0.0, Kd=0.0","Kp=2.0, Ki=0.0, Kd=0.1","Kp=6.0, Ki=0.0, Kd=0.0"
+Reached goal,True,True,True
+Time to goal (s),23.904,22.336,21.856
+Planned length (m),2.0928,2.0928,2.0928
+Actual length (m),2.123,2.083,2.065
+RMS CTE (mm),45.5,18.0,8.1
+Max CTE (mm),78.4,37.6,15.7
+Final error (mm),19.9,19.8,19.8
+Min body clearance (mm),28.1,26.8,19.9
+Control effort,2.55,6.98,15.91
+Odometry drift (mm),150.2,144.0,107.4
+Emergency stops,0,0,0
