@@ -104,31 +104,31 @@ def search(start, goal, use_astar=False):
     return path, len(explored), distances[goal]
 
 
-# Run and time Dijkstra.
-start_time = time.perf_counter()
-dijkstra_path, dijkstra_nodes, dijkstra_cost = search(
-    START, GOAL, use_astar=False
-)
-dijkstra_time = time.perf_counter() - start_time
+# Run each algorithm once for results, then time over 1000 runs.
+def average_time(use_astar, runs=1000):
+    """Average execution time over many runs (single runs are too noisy)."""
+    start_time = time.perf_counter()
+    for _ in range(runs):
+        search(START, GOAL, use_astar=use_astar)
+    return (time.perf_counter() - start_time) / runs
 
-# Run and time A*.
-start_time = time.perf_counter()
-astar_path, astar_nodes, astar_cost = search(
-    START, GOAL, use_astar=True
-)
-astar_time = time.perf_counter() - start_time
+
+dijkstra_path, dijkstra_nodes, dijkstra_cost = search(START, GOAL, use_astar=False)
+astar_path, astar_nodes, astar_cost = search(START, GOAL, use_astar=True)
+dijkstra_time = average_time(False)
+astar_time = average_time(True)
 
 
 # Display results.
 print("DIJKSTRA")
 print("Path length (steps):", dijkstra_cost)
 print("Nodes explored:", dijkstra_nodes)
-print("Execution time (seconds):", round(dijkstra_time, 6))
+print("Average execution time (ms):", round(dijkstra_time * 1000, 4))
 
 print("\nA*")
 print("Path length (steps):", astar_cost)
 print("Nodes explored:", astar_nodes)
-print("Execution time (seconds):", round(astar_time, 6))
+print("Average execution time (ms):", round(astar_time * 1000, 4))
 
 
 # Visualise both paths.
