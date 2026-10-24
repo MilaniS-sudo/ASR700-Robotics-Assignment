@@ -2,6 +2,13 @@ ASR700 Component A - Webots project
 ===================================
 
 Contents
+  worlds/component_a_navigation.wbt
+                                  Same arena; runs navigation_controller
+                                  (Question 4 closed-loop navigation)
+  controllers/navigation_controller/navigation_controller.py
+                                  Follows the A* waypoints from Question 2
+                                  with a heading PID; tests 3 gain settings;
+                                  logs to data/navigation/
   worlds/component_a.wbt          Arena (1.5 m x 1.5 m), 5 box obstacles,
                                   red/green/blue cylinder landmarks, e-puck
                                   with a 360-degree LiDAR and a 160x120 camera
@@ -20,6 +27,12 @@ How to run
   2. File > Open World... > worlds/component_a.wbt
   3. Press Play. The run lasts 90 s of simulated time, then pauses itself.
      The console prints "[controller] done: N samples saved".
+
+Question 4 (navigation)
+  Run Question 2 first (it writes component_a/question2/outputs/
+  planned_path.json), then open worlds/component_a_navigation.wbt and press
+  Play. Three trials run back to back (about 70 s of simulated time), then
+  the simulation pauses and the console prints "[nav] done".
 
 Notes
   - Tested with Webots R2025a; the world file targets R2023b or newer.
