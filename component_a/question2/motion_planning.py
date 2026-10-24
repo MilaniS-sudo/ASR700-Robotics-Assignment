@@ -1,164 +1,162 @@
+"""
+Motion planning for Component A (Question 2).
+
+Plans on the fused occupancy grid produced by Question 1
+(component_a/question1/outputs/fused_map.npz).
+
+Contents:
+    * build_planning_grid - turn the semantic map into a binary planning grid
+      (occupied OR unknown = blocked), then inflate obstacles by the robot's
+      radius so the robot can be treated as a single point
+    * search - Dijkstra (no heuristic) or A* (Euclidean or Manhattan
+      heuristic) on an 8-connected grid with diagonal cost sqrt(2)
+    * simplify_path - line-of-sight shortcutting that turns the cell path
+      into a few waypoints for the PID path follower (Questions 3 and 4)
+"""
 
 import heapq
+import math
 import time
+
 import numpy as np
-import matplotlib.pyplot as plt
+from scipy.ndimage import binary_dilation
+
+FREE, BLOCKED = 0, 1
+
+# 8-connected moves: (d_row, d_col, cost in cells)
+MOVES = [(-1, 0, 1.0), (1, 0, 1.0), (0, -1, 1.0), (0, 1, 1.0),
+         (-1, -1, math.sqrt(2)), (-1, 1, math.sqrt(2)),
+         (1, -1, math.sqrt(2)), (1, 1, math.sqrt(2))]
 
 
-# 0 = free space, 1 = obstacle
-grid = np.zeros((10, 10), dtype=int)
-
-# Add obstacles to create a navigation environment.
-grid[1:8, 3] = 1
-grid[4, 3] = 0
-
-grid[2:9, 6] = 1
-grid[7, 6] = 0
-
-grid[5, 1:5] = 1
-grid[5, 2] = 0
-
-START = (0, 0)
-GOAL = (9, 9)
+def load_map(path):
+    data = np.load(path)
+    return {"fused": data["fused"], "x_min": float(data["x_min"]),
+            "y_min": float(data["y_min"]),
+            "resolution": float(data["resolution"])}
 
 
-def get_neighbours(position):
-    """Return valid up, down, left and right neighbours."""
-    row, col = position
-    candidates = [
-        (row - 1, col),
-        (row + 1, col),
-        (row, col - 1),
-        (row, col + 1)
-    ]
+def build_planning_grid(fused, resolution, robot_radius, margin=0.01):
+    """Binary grid: blocked where occupied, a landmark, or unknown.
 
-    valid = []
-
-    for r, c in candidates:
-        if (0 <= r < grid.shape[0]
-                and 0 <= c < grid.shape[1]
-                and grid[r, c] == 0):
-            valid.append((r, c))
-
-    return valid
+    Unknown cells are blocked because the robot has no evidence they are
+    safe. Obstacles are then inflated by robot_radius + margin, the
+    configuration-space step that lets the planner treat the robot as a
+    point.
+    """
+    blocked = fused != 0   # -1 unknown, 1 obstacle, 2-4 landmarks
+    cells = int(math.ceil((robot_radius + margin) / resolution))
+    yy, xx = np.mgrid[-cells:cells + 1, -cells:cells + 1]
+    disk = xx ** 2 + yy ** 2 <= cells ** 2
+    inflated = binary_dilation(blocked, structure=disk)
+    return inflated.astype(int), cells
 
 
-def heuristic(position, goal):
-    """Manhattan distance for four-direction movement."""
-    return abs(position[0] - goal[0]) + abs(position[1] - goal[1])
+def world_to_cell(x, y, m):
+    return (int(math.floor((y - m["y_min"]) / m["resolution"])),
+            int(math.floor((x - m["x_min"]) / m["resolution"])))
 
 
-def search(start, goal, use_astar=False):
-    """Run Dijkstra (False) or A* (True)."""
-    frontier = []
-    initial_h = heuristic(start, goal) if use_astar else 0
+def cell_to_world(row, col, m):
+    return (m["x_min"] + (col + 0.5) * m["resolution"],
+            m["y_min"] + (row + 0.5) * m["resolution"])
 
-    heapq.heappush(frontier, (initial_h, 0, start))
 
-    distances = {start: 0}
-    parents = {}
-    explored = set()
+def euclidean(a, b):
+    return math.hypot(a[0] - b[0], a[1] - b[1])
+
+
+def manhattan(a, b):
+    return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+
+def search(grid, start, goal, heuristic=None):
+    """Dijkstra if heuristic is None, otherwise A*.
+
+    Returns dict with path (list of cells), cost (cells), nodes_expanded,
+    and the set of expanded cells (for visualisation).
+    """
+    rows, cols = grid.shape
+    h = (lambda c: heuristic(c, goal)) if heuristic else (lambda c: 0.0)
+
+    frontier = [(h(start), 0.0, start)]
+    g_cost = {start: 0.0}
+    parent = {}
+    expanded = set()
 
     while frontier:
-        priority, cost, current = heapq.heappop(frontier)
-
-        # Ignore outdated entries in the priority queue.
-        if cost != distances.get(current):
-            continue
-
-        if current in explored:
-            continue
-
-        explored.add(current)
-
+        _, cost, current = heapq.heappop(frontier)
+        if current in expanded:
+            continue        # stale queue entry
+        expanded.add(current)
         if current == goal:
             break
 
-        for neighbour in get_neighbours(current):
-            new_cost = cost + 1
+        r, c = current
+        for dr, dc, step in MOVES:
+            nr, nc = r + dr, c + dc
+            if not (0 <= nr < rows and 0 <= nc < cols):
+                continue
+            if grid[nr, nc] == BLOCKED:
+                continue
+            # No corner cutting: a diagonal move needs both side cells free.
+            if dr and dc and (grid[r + dr, c] or grid[r, c + dc]):
+                continue
+            new_cost = cost + step
+            if new_cost < g_cost.get((nr, nc), float("inf")):
+                g_cost[(nr, nc)] = new_cost
+                parent[(nr, nc)] = current
+                heapq.heappush(frontier,
+                               (new_cost + h((nr, nc)), new_cost, (nr, nc)))
 
-            if new_cost < distances.get(neighbour, float("inf")):
-                distances[neighbour] = new_cost
-                parents[neighbour] = current
+    if goal not in expanded:
+        return {"path": [], "cost": float("inf"),
+                "nodes_expanded": len(expanded), "expanded": expanded}
 
-                h = heuristic(neighbour, goal) if use_astar else 0
-                heapq.heappush(
-                    frontier,
-                    (new_cost + h, new_cost, neighbour)
-                )
-
-    if goal not in distances:
-        return [], len(explored), float("inf")
-
-    # Reconstruct the path from goal back to start.
-    path = []
-    current = goal
-
-    while current != start:
-        path.append(current)
-        current = parents[current]
-
-    path.append(start)
+    path = [goal]
+    while path[-1] != start:
+        path.append(parent[path[-1]])
     path.reverse()
+    return {"path": path, "cost": g_cost[goal],
+            "nodes_expanded": len(expanded), "expanded": expanded}
 
-    return path, len(explored), distances[goal]
 
-
-# Run each algorithm once for results, then time over 1000 runs.
-def average_time(use_astar, runs=1000):
-    """Average execution time over many runs (single runs are too noisy)."""
-    start_time = time.perf_counter()
+def time_search(grid, start, goal, heuristic=None, runs=20):
+    """Average wall-clock time (ms) over several runs."""
+    t0 = time.perf_counter()
     for _ in range(runs):
-        search(START, GOAL, use_astar=use_astar)
-    return (time.perf_counter() - start_time) / runs
+        search(grid, start, goal, heuristic)
+    return 1000 * (time.perf_counter() - t0) / runs
 
 
-dijkstra_path, dijkstra_nodes, dijkstra_cost = search(START, GOAL, use_astar=False)
-astar_path, astar_nodes, astar_cost = search(START, GOAL, use_astar=True)
-dijkstra_time = average_time(False)
-astar_time = average_time(True)
+def line_is_free(grid, a, b):
+    """True if the straight segment between cells a and b is collision free
+    (sampled at quarter-cell steps)."""
+    n = int(max(abs(b[0] - a[0]), abs(b[1] - a[1])) * 4) + 1
+    for t in np.linspace(0, 1, n):
+        r = int(round(a[0] + t * (b[0] - a[0])))
+        c = int(round(a[1] + t * (b[1] - a[1])))
+        if grid[r, c] == BLOCKED:
+            return False
+    return True
 
 
-# Display results.
-print("DIJKSTRA")
-print("Path length (steps):", dijkstra_cost)
-print("Nodes explored:", dijkstra_nodes)
-print("Average execution time (ms):", round(dijkstra_time * 1000, 4))
+def simplify_path(grid, path):
+    """Greedy line-of-sight shortcutting: keep only the waypoints needed so
+    that each straight segment stays in free space."""
+    if len(path) < 3:
+        return list(path)
+    waypoints = [path[0]]
+    i = 0
+    while i < len(path) - 1:
+        j = len(path) - 1
+        while j > i + 1 and not line_is_free(grid, path[i], path[j]):
+            j -= 1
+        waypoints.append(path[j])
+        i = j
+    return waypoints
 
-print("\nA*")
-print("Path length (steps):", astar_cost)
-print("Nodes explored:", astar_nodes)
-print("Average execution time (ms):", round(astar_time * 1000, 4))
 
-
-# Visualise both paths.
-fig, axes = plt.subplots(1, 2, figsize=(12, 5))
-
-results = [
-    (axes[0], dijkstra_path, "Dijkstra's Algorithm"),
-    (axes[1], astar_path, "A* Algorithm")
-]
-
-for ax, path, title in results:
-    ax.imshow(grid, cmap="Greys", origin="upper", vmin=0, vmax=1)
-
-    if path:
-        rows = [point[0] for point in path]
-        cols = [point[1] for point in path]
-        ax.plot(cols, rows, marker="o", linewidth=2)
-    else:
-        ax.set_title(title + " — No path found")
-
-    ax.scatter(START[1], START[0], marker="s", s=100, label="Start")
-    ax.scatter(GOAL[1], GOAL[0], marker="*", s=150, label="Goal")
-
-    ax.set_title(title)
-    ax.set_xticks(range(grid.shape[1]))
-    ax.set_yticks(range(grid.shape[0]))
-    ax.set_xlabel("Column")
-    ax.set_ylabel("Row")
-    ax.grid(True, alpha=0.25)
-    ax.legend()
-
-plt.tight_layout()
-plt.show()
+def path_length_m(cells, m):
+    pts = [cell_to_world(r, c, m) for r, c in cells]
+    return sum(math.dist(pts[k], pts[k + 1]) for k in range(len(pts) - 1))
