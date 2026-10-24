@@ -99,9 +99,10 @@ def export_ground_truth():
         name_field = node.getField("name")
         name = name_field.getSFString() if name_field else ""
 
-        if type_name == "WoodenBox":
+        if name.startswith("obstacle_"):
             x, y, _ = node.getField("translation").getSFVec3f()
-            sx, sy, sz = node.getField("size").getSFVec3f()
+            box = node.getField("boundingObject").getSFNode()
+            sx, sy, sz = box.getField("size").getSFVec3f()
             obstacles.append({"name": name, "x": x, "y": y,
                               "size_x": sx, "size_y": sy})
         elif name.startswith("landmark_"):
