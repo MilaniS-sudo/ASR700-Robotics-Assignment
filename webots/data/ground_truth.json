@@ -1,0 +1,76 @@
+{
+  "arena": {
+    "size_x": 1.5,
+    "size_y": 1.5
+  },
+  "obstacles": [
+    {
+      "name": "obstacle_1",
+      "x": -0.3,
+      "y": -0.3,
+      "size_x": 0.15,
+      "size_y": 0.15
+    },
+    {
+      "name": "obstacle_2",
+      "x": 0.3,
+      "y": -0.2,
+      "size_x": 0.1,
+      "size_y": 0.5
+    },
+    {
+      "name": "obstacle_3",
+      "x": -0.25,
+      "y": 0.35,
+      "size_x": 0.15,
+      "size_y": 0.15
+    },
+    {
+      "name": "obstacle_4",
+      "x": 0.05,
+      "y": 0.15,
+      "size_x": 0.2,
+      "size_y": 0.2
+    },
+    {
+      "name": "obstacle_5",
+      "x": 0.4,
+      "y": 0.45,
+      "size_x": 0.15,
+      "size_y": 0.15
+    }
+  ],
+  "landmarks": [
+    {
+      "name": "landmark_red",
+      "colour": "red",
+      "x": -0.6,
+      "y": 0.6,
+      "radius": 0.04
+    },
+    {
+      "name": "landmark_green",
+      "colour": "green",
+      "x": 0.6,
+      "y": -0.6,
+      "radius": 0.04
+    },
+    {
+      "name": "landmark_blue",
+      "colour": "blue",
+      "x": 0.0,
+      "y": -0.55,
+      "radius": 0.04
+    }
+  ],
+  "lidar": {
+    "rays": 360,
+    "fov_rad": 6.28318,
+    "max_range_m": 1.5
+  },
+  "camera": {
+    "width": 160,
+    "height": 120,
+    "fov_rad": 0.84
+  }
+}

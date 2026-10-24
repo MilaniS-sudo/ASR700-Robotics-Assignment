@@ -1,0 +1,136 @@
+#VRML_SIM R2023b utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/factory/containers/protos/WoodenBox.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/robots/gctronic/e-puck/protos/E-puck.proto"
+
+WorldInfo {
+  info [
+    "ASR700 Component A: e-puck with 360-degree LiDAR and camera"
+    "Arena 1.5 m x 1.5 m, box obstacles, coloured cylinder landmarks"
+  ]
+  title "Component A - Perception, Planning and Control"
+  basicTimeStep 16
+}
+Viewpoint {
+  orientation -0.3236 0.3236 0.8891 1.688
+  position 0 -2.2 2.0
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+  floorSize 1.5 1.5
+  wallHeight 0.1
+}
+WoodenBox {
+  translation -0.3 -0.3 0.075
+  name "obstacle_1"
+  size 0.15 0.15 0.15
+}
+WoodenBox {
+  translation 0.3 -0.2 0.075
+  name "obstacle_2"
+  size 0.1 0.5 0.15
+}
+WoodenBox {
+  translation -0.25 0.35 0.075
+  name "obstacle_3"
+  size 0.15 0.15 0.15
+}
+WoodenBox {
+  translation 0.05 0.15 0.075
+  name "obstacle_4"
+  size 0.2 0.2 0.15
+}
+WoodenBox {
+  translation 0.4 0.45 0.075
+  name "obstacle_5"
+  size 0.15 0.15 0.15
+}
+Solid {
+  translation -0.6 0.6 0.06
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 1 0 0
+        roughness 1
+        metalness 0
+      }
+      geometry Cylinder {
+        height 0.12
+        radius 0.04
+      }
+    }
+  ]
+  name "landmark_red"
+  boundingObject Cylinder {
+    height 0.12
+    radius 0.04
+  }
+}
+Solid {
+  translation 0.6 -0.6 0.06
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0 1 0
+        roughness 1
+        metalness 0
+      }
+      geometry Cylinder {
+        height 0.12
+        radius 0.04
+      }
+    }
+  ]
+  name "landmark_green"
+  boundingObject Cylinder {
+    height 0.12
+    radius 0.04
+  }
+}
+Solid {
+  translation 0 -0.55 0.06
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0 0 1
+        roughness 1
+        metalness 0
+      }
+      geometry Cylinder {
+        height 0.12
+        radius 0.04
+      }
+    }
+  ]
+  name "landmark_blue"
+  boundingObject Cylinder {
+    height 0.12
+    radius 0.04
+  }
+}
+E-puck {
+  translation -0.6 -0.6 0
+  controller "component_a_controller"
+  supervisor TRUE
+  camera_width 160
+  camera_height 120
+  turretSlot [
+    Lidar {
+      translation 0.0095 0 0.01
+      name "lidar"
+      horizontalResolution 360
+      fieldOfView 6.28318
+      numberOfLayers 1
+      near 0.01
+      minRange 0.05
+      maxRange 1.5
+      noise 0.005
+    }
+  ]
+}
