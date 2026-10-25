@@ -1,21 +1,30 @@
-# Component B — Multi-Agent Robotic Swarm with Learning-Based Decision-Making
+# Autonomous Systems and Robotics 700: Intelligent Autonomous Robotic Systems
 
-Four e-puck robots cooperatively search a 2 m × 2 m Webots arena for a hidden
-signal source (a stand-in for a gas leak).
+Two simulated robotic systems built in **Webots** and analysed in **Python**.
+Full setup, versions, run order and runtimes are in [`README.txt`](README.txt).
 
-| Notebook | Question | Contents |
+## Component A: autonomous mobile robot (e-puck)
+| Question | Folder | Summary |
 |---|---|---|
-| `question1/swarm_setup.ipynb` | B1 (10) | Task, roles, ring and star topologies, world and controller design, communication load |
-| `question2/consensus_pso.ipynb` | B2 (10) | Average consensus with theoretical convergence rate, formation, PSO search, emergent behaviour, convergence evaluation |
-| `question3/learning_and_decisions.ipynb` | B3 (10) | MLP trained by imitation of the navigation rule, leave-one-seed-out validation, confusion matrix, in-simulation test, centralised vs distributed comparison with fault injection |
-| `question4/ethics_risk.ipynb` | B4 (20) | Bias and reliability, explainability (permutation importance), safety risks, fault tolerance, South African context, references |
+| A1 Perception | `component_a/question1` | LiDAR occupancy grid + HSV camera landmark detection, fused into a semantic map (landmarks within about 1 cm) |
+| A2 Planning | `component_a/question2` | Dijkstra vs A* on the real map, 300-route benchmark, waypoints |
+| A3 Control | `component_a/question3` | Differential-drive kinematics, PID tuning and analysis |
+| A4 Integration | `component_a/question4` | Closed-loop navigation in Webots, 3 PID gain sets, odometry drift, trade-offs and ethics |
 
-`swarm_data.py` holds the shared loading and metric helpers.
+## Component B: multi-agent swarm (4 × e-puck)
+| Question | Folder | Summary |
+|---|---|---|
+| B1 Setup | `component_b/question1` | Cooperative source search, ring and star topologies |
+| B2 Consensus & swarm | `component_b/question2` | Average consensus, formation, PSO search, emergent behaviour |
+| B3 Learning & decisions | `component_b/question3` | Neural-network navigation (imitation learning), centralised vs distributed with fault injection |
+| B4 Ethics & risk | `component_b/question4` | Bias, explainability, safety, fault tolerance, South African context |
 
-## Running order
-1. Open `webots/worlds/component_b_swarm.wbt` and press Play. This runs 12 experiments (4 types × 3 seeds), about 21 min of simulated time.
-2. Run `question3/learning_and_decisions.ipynb`. It writes `webots/data/swarm/nn_policy.json`.
-3. Press Play again in Webots. It now runs the 3 neural-network runs.
-4. Run all four notebooks from their own folders.
+## Simulation
+| Folder | Contents |
+|---|---|
+| `webots/worlds` | `component_a.wbt`, `component_a_navigation.wbt`, `component_b_swarm.wbt` |
+| `webots/controllers` | `component_a_controller`, `navigation_controller`, `swarm_controller`, `swarm_supervisor` |
+| `webots/data` | All logged simulation data used by the notebooks |
 
-Dependencies: numpy, pandas, matplotlib, scikit-learn.
+All reported results come from simulations that were actually run. Random
+seeds are fixed, and Component B repeats every experiment with 3 seeds.
