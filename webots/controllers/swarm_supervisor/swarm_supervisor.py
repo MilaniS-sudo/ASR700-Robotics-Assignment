@@ -75,7 +75,11 @@ receiver.enable(timestep)
 os.makedirs(DATA_DIR, exist_ok=True)
 
 robots = [sup.getFromDef(f"ROBOT_{i}") for i in range(N_ROBOTS)]
-starts = [r.getField("translation").getSFVec3f() for r in robots]
+# Fixed start poses (same as the world file). They are not read from the
+# robots' current positions, which would be wrong if the controller restarts
+# while the robots are mid-arena (e.g. after pausing without reloading).
+starts = [[-0.8, -0.8, 0.0], [0.8, -0.8, 0.0], [0.8, 0.0, 0.0],
+          [-0.8, 0.0, 0.0]]
 
 
 def load_obstacles():
