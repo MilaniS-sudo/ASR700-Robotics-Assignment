@@ -1,0 +1,313 @@
+#VRML_SIM R2023b utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/robots/gctronic/e-puck/protos/E-puck.proto"
+
+# Component B: four e-pucks search cooperatively for a hidden signal source.
+# Plain colours and built-in lighting: renders the same on every machine.
+
+WorldInfo {
+  info [
+    "ASR700 Component B: multi-agent swarm (consensus, PSO, NN avoidance)"
+  ]
+  title "Component B - Multi-agent swarm"
+  basicTimeStep 16
+}
+Viewpoint {
+  orientation -0.5773 0.5773 0.5773 2.0944
+  position 0 0 4.2
+}
+Background {
+  skyColor [
+    0.6 0.75 0.9
+  ]
+}
+DirectionalLight {
+  ambientIntensity 1
+  direction 0.4 0.6 -1
+  intensity 1.4
+  castShadows FALSE
+}
+DirectionalLight {
+  direction -0.4 -0.6 -1
+  intensity 0.6
+  castShadows FALSE
+}
+RectangleArena {
+  floorSize 2 2
+  wallHeight 0.1
+  floorAppearance PBRAppearance {
+    baseColor 0.85 0.85 0.82
+    roughness 1
+    metalness 0
+  }
+  wallAppearance PBRAppearance {
+    baseColor 0.35 0.35 0.38
+    roughness 1
+    metalness 0
+  }
+}
+Solid {
+  translation -0.35 0.35 0.075
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.5 0.5 0.5
+        roughness 1
+        metalness 0
+      }
+      geometry Box {
+        size 0.2 0.2 0.15
+      }
+    }
+  ]
+  name "obstacle_1"
+  boundingObject Box {
+    size 0.2 0.2 0.15
+  }
+}
+Solid {
+  translation 0.35 0.1 0.075
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.5 0.5 0.5
+        roughness 1
+        metalness 0
+      }
+      geometry Box {
+        size 0.15 0.3 0.15
+      }
+    }
+  ]
+  name "obstacle_2"
+  boundingObject Box {
+    size 0.15 0.3 0.15
+  }
+}
+Solid {
+  translation -0.55 -0.35 0.075
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.5 0.5 0.5
+        roughness 1
+        metalness 0
+      }
+      geometry Box {
+        size 0.15 0.15 0.15
+      }
+    }
+  ]
+  name "obstacle_3"
+  boundingObject Box {
+    size 0.15 0.15 0.15
+  }
+}
+DEF SOURCE Solid {
+  translation 0.55 0.5 0.001
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 1 0.6 0
+        roughness 1
+        metalness 0
+        transparency 0.4
+      }
+      geometry Cylinder {
+        height 0.002
+        radius 0.06
+      }
+    }
+  ]
+  name "signal_source"
+}
+DEF ROBOT_0 E-puck {
+  translation -0.8 -0.8 0
+  name "robot_0"
+  controller "swarm_controller"
+  emitter_channel 1
+  receiver_channel 1
+  turretSlot [
+    # Collar at LiDAR height so the other robots' LiDARs can see this robot.
+    # Its own LiDAR ignores it: the collar lies inside the near clip plane.
+    Pose {
+      translation 0.0095 0 0.01
+      children [
+        Shape {
+          appearance PBRAppearance {
+            baseColor 0.9 0.2 0.2
+            roughness 1
+            metalness 0
+          }
+          geometry Cylinder {
+            height 0.03
+            radius 0.03
+          }
+        }
+      ]
+    }
+    Lidar {
+      translation 0.0095 0 0.01
+      name "lidar"
+      horizontalResolution 120
+      fieldOfView 6.28318
+      numberOfLayers 1
+      near 0.045
+      minRange 0.05
+      maxRange 1.0
+      noise 0.005
+    }
+    GPS {
+      name "gps"
+    }
+    InertialUnit {
+      name "imu"
+    }
+  ]
+}
+DEF ROBOT_1 E-puck {
+  translation 0.8 -0.8 0
+  name "robot_1"
+  controller "swarm_controller"
+  emitter_channel 1
+  receiver_channel 1
+  turretSlot [
+    # Collar at LiDAR height so the other robots' LiDARs can see this robot.
+    # Its own LiDAR ignores it: the collar lies inside the near clip plane.
+    Pose {
+      translation 0.0095 0 0.01
+      children [
+        Shape {
+          appearance PBRAppearance {
+            baseColor 0.2 0.5 0.9
+            roughness 1
+            metalness 0
+          }
+          geometry Cylinder {
+            height 0.03
+            radius 0.03
+          }
+        }
+      ]
+    }
+    Lidar {
+      translation 0.0095 0 0.01
+      name "lidar"
+      horizontalResolution 120
+      fieldOfView 6.28318
+      numberOfLayers 1
+      near 0.045
+      minRange 0.05
+      maxRange 1.0
+      noise 0.005
+    }
+    GPS {
+      name "gps"
+    }
+    InertialUnit {
+      name "imu"
+    }
+  ]
+}
+DEF ROBOT_2 E-puck {
+  translation 0.8 0.0 0
+  name "robot_2"
+  controller "swarm_controller"
+  emitter_channel 1
+  receiver_channel 1
+  turretSlot [
+    # Collar at LiDAR height so the other robots' LiDARs can see this robot.
+    # Its own LiDAR ignores it: the collar lies inside the near clip plane.
+    Pose {
+      translation 0.0095 0 0.01
+      children [
+        Shape {
+          appearance PBRAppearance {
+            baseColor 0.95 0.75 0.1
+            roughness 1
+            metalness 0
+          }
+          geometry Cylinder {
+            height 0.03
+            radius 0.03
+          }
+        }
+      ]
+    }
+    Lidar {
+      translation 0.0095 0 0.01
+      name "lidar"
+      horizontalResolution 120
+      fieldOfView 6.28318
+      numberOfLayers 1
+      near 0.045
+      minRange 0.05
+      maxRange 1.0
+      noise 0.005
+    }
+    GPS {
+      name "gps"
+    }
+    InertialUnit {
+      name "imu"
+    }
+  ]
+}
+DEF ROBOT_3 E-puck {
+  translation -0.8 0.0 0
+  name "robot_3"
+  controller "swarm_controller"
+  emitter_channel 1
+  receiver_channel 1
+  turretSlot [
+    # Collar at LiDAR height so the other robots' LiDARs can see this robot.
+    # Its own LiDAR ignores it: the collar lies inside the near clip plane.
+    Pose {
+      translation 0.0095 0 0.01
+      children [
+        Shape {
+          appearance PBRAppearance {
+            baseColor 0.6 0.3 0.8
+            roughness 1
+            metalness 0
+          }
+          geometry Cylinder {
+            height 0.03
+            radius 0.03
+          }
+        }
+      ]
+    }
+    Lidar {
+      translation 0.0095 0 0.01
+      name "lidar"
+      horizontalResolution 120
+      fieldOfView 6.28318
+      numberOfLayers 1
+      near 0.045
+      minRange 0.05
+      maxRange 1.0
+      noise 0.005
+    }
+    GPS {
+      name "gps"
+    }
+    InertialUnit {
+      name "imu"
+    }
+  ]
+}
+Robot {
+  name "swarm_supervisor"
+  controller "swarm_supervisor"
+  supervisor TRUE
+  children [
+    Emitter {
+      channel 1
+    }
+    Receiver {
+      channel 1
+    }
+  ]
+}
