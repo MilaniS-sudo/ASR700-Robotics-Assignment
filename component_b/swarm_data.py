@@ -8,6 +8,16 @@ import numpy as np
 import pandas as pd
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "webots" / "data" / "swarm"
+
+# GitHub's web uploader rejects large uploads, so the repository stores the
+# swarm logs as webots/data/swarm.zip. Extract it on first use.
+_ZIP = DATA_DIR.parent / "swarm.zip"
+if not (DATA_DIR / "experiments.json").exists() and _ZIP.exists():
+    import zipfile
+    with zipfile.ZipFile(_ZIP) as archive:
+        archive.extractall(DATA_DIR.parent,
+                           [m for m in archive.namelist()
+                            if m.startswith("swarm/")])
 N_ROBOTS = 4
 SOURCE = (0.55, 0.5)
 STARTS = [(-0.8, -0.8), (0.8, -0.8), (0.8, 0.0), (-0.8, 0.0)]
