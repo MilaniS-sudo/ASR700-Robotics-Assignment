@@ -1,0 +1,5 @@
+,single point of failure,gbest error (cm),all within 10 cm (iter),messages,contact events,runs
+distributed,no,6.0 ± 2.3,14.3 ± 4.0,180.0 ± 0.0,0.0 ± 0.0,3
+centralised,yes,5.9 ± 2.8,11.3 ± 4.0,98.0 ± 2.0,2.7 ± 4.6,3
+distributed_robot_failure,no,4.9 ± 2.4,11.3 ± 4.0,165.0 ± 0.0,0.0 ± 0.0,3
+centralised_coordinator_failure,yes,15.0 ± 6.7,nan (0/3 runs),93.0 ± 1.0,0.0 ± 0.0,3

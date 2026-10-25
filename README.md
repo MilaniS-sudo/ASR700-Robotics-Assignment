@@ -1,52 +1,21 @@
-Autonomous Systems and Robotics 700
+# Component B — Multi-Agent Robotic Swarm with Learning-Based Decision-Making
 
-Project Title
+Four e-puck robots cooperatively search a 2 m × 2 m Webots arena for a hidden
+signal source (a stand-in for a gas leak).
 
-Intelligent Autonomous Robotic Systems Project
+| Notebook | Question | Contents |
+|---|---|---|
+| `question1/swarm_setup.ipynb` | B1 (10) | Task, roles, ring and star topologies, world and controller design, communication load |
+| `question2/consensus_pso.ipynb` | B2 (10) | Average consensus with theoretical convergence rate, formation, PSO search, emergent behaviour, convergence evaluation |
+| `question3/learning_and_decisions.ipynb` | B3 (10) | MLP trained by imitation of the navigation rule, leave-one-seed-out validation, confusion matrix, in-simulation test, centralised vs distributed comparison with fault injection |
+| `question4/ethics_risk.ipynb` | B4 (20) | Bias and reliability, explainability (permutation importance), safety risks, fault tolerance, South African context, references |
 
-1. Project Overview
+`swarm_data.py` holds the shared loading and metric helpers.
 
-This project involves designing, simulating and evaluating two intelligent robotic systems. Component A focuses on autonomous mobile robot perception, motion planning and control. Component B focuses on multi-agent robotics, swarm coordination and machine learning.
+## Running order
+1. Open `webots/worlds/component_b_swarm.wbt` and press Play. This runs 12 experiments (4 types × 3 seeds), about 21 min of simulated time.
+2. Run `question3/learning_and_decisions.ipynb`. It writes `webots/data/swarm/nn_policy.json`.
+3. Press Play again in Webots. It now runs the 3 neural-network runs.
+4. Run all four notebooks from their own folders.
 
-2. Project Objectives
-
-* Simulate robot sensors and process sensor data.
-* Detect obstacles using camera image processing.
-* Combine LiDAR and camera information through sensor fusion.
-* Implement Dijkstra’s and A* pathfinding algorithms.
-* Design and evaluate a PID controller.
-* Develop a cooperative multi-agent robotic system.
-* Apply consensus, swarm intelligence and machine learning.
-* Evaluate ethical, safety and reliability considerations.
-
-3. Technologies
-
-* Webots — robot modelling and simulation.
-* Python — algorithms and controller development.
-* OpenCV — camera image processing.
-* NumPy — numerical calculations.
-* Matplotlib — graphs and visualisations.
-* GitHub — source-code version control.
-
-4. Project Structure
-
-* component_a/ — perception, path planning and control.
-* component_b/ — multi-agent simulation and learning.
-* worlds/ — Webots simulation environments.
-* data/ — sensor readings and datasets.
-* outputs/ — generated graphs and results.
-
-5. Development Status
-
-* [x]	GitHub repository created.
-* [ ]	Component A, Question 1: Sensor simulation and perception.
-* [ ]	Component A, Question 2: Motion planning.
-* [ ]	Component A, Question 3: PID control.
-* [ ]	Component A, Question 4: System integration and evaluation.
-* [ ]	Component B: Multi-agent robotics and machine learning.
-* [ ]	Webots simulations tested and evaluated.
-* [ ]	Final report and documentation completed.
-
-6. Reproducibility
-
-The final project will document the software versions, dependencies, simulation instructions and evaluation results. All reported simulation results will be based on tests actually performed.
+Dependencies: numpy, pandas, matplotlib, scikit-learn.
